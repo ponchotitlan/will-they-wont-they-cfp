@@ -1,0 +1,19 @@
+services:
+  will-they-wont-they-cfp-proxy:
+    build:
+      context: ./proxy
+      dockerfile: Dockerfile
+    container_name: will-they-wont-they-cfp-proxy
+    restart: unless-stopped
+
+  will-they-wont-they-cfp-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: will-they-wont-they-cfp-app:latest
+    container_name: will-they-wont-they-cfp-app
+    ports:
+      - "8081:80"
+    depends_on:
+      - will-they-wont-they-cfp-proxy
+    restart: unless-stopped

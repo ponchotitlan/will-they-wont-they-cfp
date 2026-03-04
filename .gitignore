@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+
+# Environment variables — NEVER commit your API key
+.env
+.env.local
+.env.*.local
+
+# Build output
+dist/
+
+# Editor
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# OS
+.DS_Store
+Thumbs.db
