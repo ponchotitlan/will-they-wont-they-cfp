@@ -173,11 +173,21 @@ ${extraText.trim() ? `\nCALL FOR PAPERS TEXT:\n${extraText.trim()}` : ""}
 
     const results = {};
 
+    const buildAgentMessage = (agentId) => {
+      if (agentId === "committee") {
+        return `${sessionContext}\n\n---\nCONFERENCE ANALYSIS:\n${results.researcher}\n\n---\nCFP ANALYSIS:\n${results.analyser}`;
+      }
+      if (agentId === "audience") {
+        return `${sessionContext}\n\n---\nCONFERENCE ANALYSIS:\n${results.researcher}`;
+      }
+      return sessionContext;
+    };
+
     for (const [index, agent] of AGENTS.entries()) {
       if (index > 0) await sleepWithCountdown(config.agentDelay * 1000);
       setActiveAgent(agent.id);
       try {
-        const result = await callClaude(agent.role, sessionContext);
+        const result = await callClaude(agent.role, buildAgentMessage(agent.id));
         results[agent.id] = result;
         setAgentResults((prev) => ({ ...prev, [agent.id]: result }));
         setAgentProgress((prev) => [...prev, agent.id]);
@@ -191,7 +201,7 @@ ${extraText.trim() ? `\nCALL FOR PAPERS TEXT:\n${extraText.trim()}` : ""}
           setAgentProgress((prev) => prev.filter((id) => id !== "analyser"));
           setActiveAgent("analyser");
           await sleepWithCountdown(config.agentDelay * 1000); // respect rate limit before retry
-          const retryResult = await callClaude(agent.role, sessionContext);
+          const retryResult = await callClaude(agent.role, buildAgentMessage(agent.id));
           results[agent.id] = retryResult;
           setAgentResults((prev) => ({ ...prev, [agent.id]: retryResult }));
           setAgentProgress((prev) => [...prev, "analyser"]);
@@ -210,14 +220,6 @@ ${extraText.trim() ? `\nCALL FOR PAPERS TEXT:\n${extraText.trim()}` : ""}
     const synthesisInput = `
 ORIGINAL SESSION:
 ${sessionContext}
-
----
-CFP ANALYSER REPORT:
-${truncate(results.analyser)}
-
----
-CONFERENCE RESEARCHER REPORT:
-${truncate(results.researcher)}
 
 ---
 PROGRAMME COMMITTEE EVALUATION:
