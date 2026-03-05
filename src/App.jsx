@@ -31,13 +31,15 @@ export default function SessionEvaluator() {
   const [cfpUrl, setCfpUrl] = useState("");
   const [cfpText, setCfpText] = useState("");
   const [needsCfpText, setNeedsCfpText] = useState(false);
-  const [phase, setPhase] = useState("idle"); // idle | running | done
+  const [phase, setPhase] = useState("idle"); // idle | running | done | resubmit
   const [agentResults, setAgentResults] = useState({});
   const [synthesis, setSynthesis] = useState("");
   const [activeAgent, setActiveAgent] = useState(null);
   const [agentProgress, setAgentProgress] = useState([]);
   const [error, setError] = useState("");
   const [countdown, setCountdown] = useState(0);
+  const [resubmitTitle, setResubmitTitle] = useState("");
+  const [resubmitAbstract, setResubmitAbstract] = useState("");
   const resultsRef = useRef(null);
   const cfpTextResolverRef = useRef(null);
 
@@ -252,6 +254,96 @@ ${truncate(results.audience)}
     setCfpText("");
     setNeedsCfpText(false);
     cfpTextResolverRef.current = null;
+  };
+
+  const startResubmit = () => {
+    setResubmitTitle("");
+    setResubmitAbstract("");
+    setError("");
+    setPhase("resubmit");
+  };
+
+  const runResubmit = async () => {
+    if (!resubmitTitle.trim() || !resubmitAbstract.trim()) {
+      setError("Please provide a title and abstract for the new session.");
+      return;
+    }
+    const preservedAnalyser  = agentResults.analyser;
+    const preservedResearcher = agentResults.researcher;
+
+    setTitle(resubmitTitle);
+    setAbstract(resubmitAbstract);
+    setError("");
+    setPhase("running");
+    setAgentResults({ analyser: preservedAnalyser, researcher: preservedResearcher });
+    setSynthesis("");
+    setAgentProgress(["analyser", "researcher"]);
+
+    const sessionContext = `
+SESSION TITLE: ${resubmitTitle}
+
+ABSTRACT: ${resubmitAbstract}
+
+EVENT URL: ${eventUrl || "Not provided"}
+CALL FOR PAPERS URL: ${cfpUrl || "Not provided"}
+${cfpText.trim() ? `\nCALL FOR PAPERS TEXT:\n${cfpText.trim()}` : ""}
+    `.trim();
+
+    const results = { analyser: preservedAnalyser, researcher: preservedResearcher };
+
+    const buildMsg = (agentId) => {
+      if (agentId === "committee") {
+        return `${sessionContext}\n\n---\nCONFERENCE ANALYSIS:\n${results.researcher}\n\n---\nCFP ANALYSIS:\n${results.analyser}`;
+      }
+      if (agentId === "audience") {
+        return `${sessionContext}\n\n---\nCONFERENCE OVERVIEW:\n${results.analyser}`;
+      }
+      return sessionContext;
+    };
+
+    const evalAgents = AGENTS.filter((a) => a.id === "committee" || a.id === "audience");
+    for (const [index, agent] of evalAgents.entries()) {
+      if (index > 0) await sleepWithCountdown(config.agentDelay * 1000);
+      setActiveAgent(agent.id);
+      try {
+        const result = await callClaude(agent.role, buildMsg(agent.id));
+        results[agent.id] = result;
+        setAgentResults((prev) => ({ ...prev, [agent.id]: result }));
+        setAgentProgress((prev) => [...prev, agent.id]);
+      } catch (e) {
+        results[agent.id] = `⚠️ Agent encountered an error: ${e.message}`;
+        setAgentResults((prev) => ({ ...prev, [agent.id]: results[agent.id] }));
+        setAgentProgress((prev) => [...prev, agent.id]);
+      }
+    }
+
+    await sleepWithCountdown(config.agentDelay * 1000);
+    setActiveAgent("synthesis");
+    const truncate = (text, max = 1200) =>
+      text && text.length > max ? text.slice(0, max) + "\n[truncated for brevity]" : text;
+    const synthesisInput = `
+ORIGINAL SESSION:
+${sessionContext}
+
+---
+PROGRAMME COMMITTEE EVALUATION:
+${truncate(results.committee)}
+
+---
+AUDIENCE MEMBER EVALUATION:
+${truncate(results.audience)}
+    `.trim();
+
+    try {
+      const synth = await callClaude(SYNTHESISER_PROMPT, synthesisInput, 4096);
+      setSynthesis(synth);
+    } catch (e) {
+      setSynthesis(`⚠️ Synthesis failed: ${e.message}`);
+    }
+
+    setActiveAgent(null);
+    setPhase("done");
+    setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
   };
 
   const extractScore = (text, label) => {
@@ -529,9 +621,56 @@ ${truncate(results.audience)}
               <button onClick={reset} className="btn-reset">
                 ← EVALUATE ANOTHER SESSION
               </button>
+              <button onClick={startResubmit} className="btn-resubmit">
+                ↩ TRY ANOTHER SESSION FOR THIS EVENT
+              </button>
               <button onClick={exportMarkdown} className="btn-export">
                 ↓ EXPORT AS .MD
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── Resubmit ── */}
+        {phase === "resubmit" && (
+          <div className="idle-view">
+            <div className="idle-header">
+              <h1 className="idle-title">Try another session for this event</h1>
+              <p className="idle-subtitle">
+                The CFP analysis and conference research are reused. Enter a new title and abstract — only the Committee and Audience agents will re-run.
+              </p>
+            </div>
+
+            {error && <div className="error-banner">{error}</div>}
+
+            <div className="form-grid">
+              <Field label="SESSION TITLE *">
+                <input
+                  value={resubmitTitle}
+                  onChange={(e) => setResubmitTitle(e.target.value)}
+                  placeholder="e.g. From Zero to Hero: Network Automation with Python in 45 Minutes"
+                  className="input"
+                />
+              </Field>
+
+              <Field label="ABSTRACT *">
+                <textarea
+                  value={resubmitAbstract}
+                  onChange={(e) => setResubmitAbstract(e.target.value)}
+                  placeholder="Paste your session abstract here..."
+                  rows={6}
+                  className="input input--textarea"
+                />
+              </Field>
+
+              <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                <button onClick={runResubmit} className="submit-btn">
+                  ⚡ RE-EVALUATE WITH NEW SESSION
+                </button>
+                <button onClick={() => setPhase("done")} className="btn-reset">
+                  ← BACK TO RESULTS
+                </button>
+              </div>
             </div>
           </div>
         )}

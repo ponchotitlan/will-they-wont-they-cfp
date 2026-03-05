@@ -501,6 +501,24 @@
   letter-spacing: 0.05em;
 }
 
+.btn-resubmit {
+  background: linear-gradient(135deg, #A78BFA22, #A78BFA11);
+  border: 1px solid #A78BFA;
+  color: #A78BFA;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+
+.btn-resubmit:hover {
+  background: linear-gradient(135deg, #A78BFA33, #A78BFA22);
+}
+
 .btn-export {
   background: linear-gradient(135deg, #34D39922, #34D39911);
   border: 1px solid #34D399;

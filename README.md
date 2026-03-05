@@ -1,238 +1,174 @@
-# Will They Won't They — CFP Evaluator
-
-A multi-agent conference abstract evaluator powered by [Anthropic Claude](https://www.anthropic.com/). Paste your session title, abstract, and the conference/CFP URLs, then watch four specialist AI agents score and critique your submission — followed by a master synthesis with a rewritten abstract.
-
----
-
-## Table of Contents
-
-1. [What It Does](#what-it-does)
-2. [Architecture](#architecture)
-3. [Prerequisites](#prerequisites)
-4. [Local Development](#local-development)
-5. [Docker Deployment](#docker-deployment)
-6. [Usage Guide](#usage-guide)
-7. [Configuration](#configuration)
-8. [Project Structure](#project-structure)
+<h1 align="center">✏️ Will They Won't They</h1>
+<div align="center">A Conference CFP (Call for Papers) Session Evaluator</div>
 
 ---
 
-## What It Does
-
-You submit a talk title, abstract, an event URL, and a CFP URL. Four Claude-powered agents evaluate your submission from different angles, sequentially. A final synthesiser merges their findings into one actionable report.
-
-| Agent | Role |
-|---|---|
-| 🔍 **CFP Analyser** | Extracts themes, formats, requirements, and hidden signals from the Call for Papers |
-| 📚 **Conference Researcher** | Studies the conference's history, past accepted sessions, and community DNA |
-| 🎯 **Programme Committee Member** | Scores the abstract as a reviewer would — relevance, originality, clarity, credibility |
-| 🙋 **Audience Member** | Rates the abstract from an attendee's perspective — interest, value, FOMO |
-| ✨ **Synthesiser** | Combines all four analyses into scores, a reworked abstract, and ranked action items |
-
-Results can be exported as a Markdown file.
+<div align="center">
+    </br>
+    <img src="https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=white" alt="React">
+    <img src="https://img.shields.io/badge/Vite-5-646CFF?style=flat-square&logo=vite&logoColor=white" alt="Vite">
+    <img src="https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=nodedotjs&logoColor=white" alt="Node.js">
+    <img src="https://img.shields.io/badge/nginx-009639?style=flat-square&logo=nginx&logoColor=white" alt="nginx">
+    <img src="https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white" alt="Docker">
+    <img src="https://img.shields.io/badge/Claude-Anthropic-D97757?style=flat-square&logo=anthropic&logoColor=white" alt="Claude">
+    <img src="https://img.shields.io/badge/Agentic_AI-Multi--Agent-8A2BE2?style=flat-square&logo=sparkles&logoColor=white" alt="Agentic AI">
+</div>
 
 ---
 
-## Architecture
-
-```
-                        ┌─────────────────────────────────────┐
-                        │           User's Browser             │
-                        │       React SPA (Vite build)         │
-                        └──────────────┬──────────────────────┘
-                                       │ HTTP :8081
-                        ┌──────────────▼──────────────────────┐
-                        │         Nginx  (port 80)             │
-                        │  - Serves static assets              │
-                        │  - SPA fallback (index.html)         │
-                        │  - Proxies /api/* → proxy:3001       │
-                        └──────────────┬──────────────────────┘
-                                       │ HTTP /api/messages
-                        ┌──────────────▼──────────────────────┐
-                        │    Node.js Proxy  (port 3001)        │
-                        │  - Injects x-api-key from request    │
-                        │  - Forwards to Anthropic API         │
-                        │  - Handles CORS                      │
-                        └──────────────┬──────────────────────┘
-                                       │ HTTPS
-                        ┌──────────────▼──────────────────────┐
-                        │         Anthropic API                │
-                        │    api.anthropic.com/v1/messages     │
-                        └─────────────────────────────────────┘
-```
-
-### Why a proxy?
-
-Browsers cannot call the Anthropic API directly because it does not set CORS headers. The Node.js proxy acts as a pass-through: it receives the user's API key from the request header, attaches it as `x-api-key`, and forwards the call to Anthropic. The key is never stored server-side — it lives only in the user's browser `localStorage`.
-
-### Docker Compose services
-
-```
-docker-compose.yml
-│
-├── will-they-wont-they-cfp-app      (Nginx, :8081→:80)
-│     Serves the compiled React SPA
-│     Proxies /api/* to the proxy service
-│
-└── will-they-wont-they-cfp-proxy    (Node.js, :3001)
-      Forwards requests to api.anthropic.com
-```
+> 🚨 This release works only for **Anthropic Claude API keys**. Further releases will include support for other vendors.
 
 ---
 
-## Prerequisites
+You've written a conference session abstract. But will it get accepted? The CFP process can feel like a black box: criteria are vague, competition is real, and you rarely get feedback.
 
-| Requirement | Version |
-|---|---|
-| Node.js | 20+ |
-| npm | 9+ |
-| Docker + Docker Compose | any recent version |
-| Anthropic API key | [Get one here](https://console.anthropic.com/) |
+This tool puts your abstract in front of four AI agents, each reading it from a different angle: the person who wrote the call for papers, someone who knows the conference inside out, a programme committee reviewer, and a typical attendee. A fifth agent, the Synthesiser, reads all their outputs and gives you a consolidated report with rewrite suggestions.
 
----
+The goal is not to game the system. It's to help you understand how your abstract lands before you submit it.
 
-## Local Development
+## ⚙️ How It Works: The Agent Workflow
 
-Run the proxy and the Vite dev server separately.
+You provide your session title, abstract, and the conference's CFP URL. The agents then run in sequence, each building on the work of those before it.
 
-**1. Install dependencies**
-
-```bash
-npm install
+```
+analyser [🔍] ──────────────► committee [🎯] ──┐
+                              ▲           ├──► synthesiser [🧠]
+researcher [📚] ──┬───────────┘           │
+             └──► audience [🙋] ──────────┘
 ```
 
-**2. Start the proxy**
+### 🤖 The Agents
 
-```bash
-node server.js
-# Proxy listening on :3001
-```
+| Agent | Role | Inputs | What it produces |
+|---|---|---|---|
+| 🔍 **CFP Analyser** | Extracts key requirements from the Call for Papers | CFP URL | Themes, formats, audience, hard rules, hidden signals, CFP questions |
+| 📚 **Conference Researcher** | Researches past accepted sessions and conference DNA | Event URL | Ethos, accepted talk patterns, rejection signals, trending topics, speaker archetypes |
+| 🎯 **Programme Committee Member** | Evaluates from the committee's perspective | Abstract + CFP analysis [🔍] + conference research [📚] | Scores on relevance, originality, clarity, credibility and value; top 3 rejection risks; top 3 edits |
+| 🙋 **Audience Member** | Evaluates from the attendee's perspective | Abstract + conference research [📚] | Scores on click-worthiness, clarity and FOMO; most compelling thing; biggest hesitation; title rewrite suggestion |
+| 🧠 **Synthesiser** | A senior conference coach | Committee [🎯] + Audience evaluations [🙋] | Composite scores, strengths, weaknesses, 2 title rewrites, full abstract rewrite, 5 ranked edits |
 
-**3. Start the Vite dev server** (in a second terminal)
+## 🚀 Deployment
 
-```bash
-npm run dev
-# App available at http://localhost:5173
-```
+The app runs as two Docker containers managed by Docker Compose:
 
-> Vite's dev server expects `/api/messages` to be reachable at port `3001`. The proxy handles CORS so the browser call succeeds out of the box.
+- **`will-they-wont-they-cfp-app`**, the React frontend, built with Vite and served by nginx on port `8081`
+- **`will-they-wont-they-cfp-proxy`**, a lightweight Node.js proxy that forwards requests to the Anthropic API
 
-**4. Open the app and enter your Anthropic API key** in the ⚙️ Settings panel.
+### 📋 Requirements
 
----
+- Docker and Docker Compose installed
+- An [Anthropic API key](https://console.anthropic.com/settings/keys)
 
-## Docker Deployment
-
-The recommended way to run the app anywhere is Docker Compose. Everything is self-contained in two images.
-
-**1. Build and start**
+### ▶️ Running
 
 ```bash
 docker compose up --build
 ```
 
-**2. Open the app**
+To adjust what the agents say or how they behave, edit `src/prompts.yaml` and rebuild the container. No JavaScript changes needed.
 
-```
-http://localhost:8081
-```
+The default port for the web browser is `8081`. You can change it in the `docker-compose.yml` file.
 
-**3. Stop**
+### ⏹️ Stopping
 
 ```bash
 docker compose down
 ```
 
-### What happens during the build
+### ✏️ How to Use
+
+1. Open [http://localhost:8081](http://localhost:8081) in your browser.
+
+2. Click on the **⚙ Settings** panel and setup your Anthropic Claude API key. This key is stored in your browser's `localStorage`. It is never persisted on the server.
+
+<div align="center">
+<img src="images/Will-They-Wont-They-CfP-setup.gif"/>
+</div>
+
+> You can also adjust the delay between agent calls. This delay is required to avoid issues with the Claude API due to several requests from the same call, one after the other.
+
+3. Provide your session's title and abstract, the conference URL and the CfP (Call For Papers) URL. Then Click **⚡ RUN EVALUATION**.
+
+> If the `analyser` agent cannot fetch the information from the CfP URL, it will prompt you for manual copying/pasting of the CfP details.
+
+4. Once the agents have gathered their conclusions, they will be displayed on each card, along with the Committee Score and Attendee Score.
+
+<div align="center">
+<img src="images/Will-They-Wont-They-CfP-run.gif"/>
+</div>
+
+5. You can download a summary by clicking **↓ EXPORT AS .MD**, start again with for a new conference with **← EVALUATE ANOTHER SESSION**, or submit a new session for the same conference by clicking **↩ Try Another Session for This Event**.
+
+
+### 🔁 Re-evaluating Another Session for the Same Event
+
+Once you have results, you can click **↩ Try Another Session for This Event**. The Analyser and Researcher outputs are preserved; only the Committee, Audience, and Synthesiser re-run with your new title and abstract. This saves time and API tokens when iterating or evaluating multiple submissions for the same conference.
+
+<div align="center">
+<img src="images/Will-They-Wont-They-CfP-rerun.gif"/>
+</div>
+
+
+## 🔬 Behind the Curtains
 
 ```
-Docker build (app)
-  └─ Stage 1 — node:20-alpine
-       npm install + vite build  →  /app/dist
-  └─ Stage 2 — nginx:alpine
-       Copy /app/dist → /usr/share/nginx/html
-       Copy nginx.conf
-
-Docker build (proxy)
-  └─ node:20-alpine
-       node server.js  (plain Node, no extra deps)
+┌─────────────────────────────────────────┐
+│              Browser                    │
+│                                         │
+│  React + Vite (served by nginx :8081)   │
+│  • Stores API key in localStorage       │
+│  • Runs agents sequentially             │
+│  • Loads prompts from prompts.yaml      │
+└───────────────────┬─────────────────────┘
+                    │ POST /api/messages
+                    │ (x-user-api-key header)
+                    ▼
+┌─────────────────────────────────────────┐
+│           Proxy Container               │
+│                                         │
+│  Node.js HTTP server (:3001)            │
+│  • Validates API key is present         │
+│  • Forwards request to Anthropic        │
+│  • Streams response back to browser     │
+└───────────────────┬─────────────────────┘
+                    │ HTTPS
+                    ▼
+         api.anthropic.com/v1/messages
 ```
 
-Both services use `restart: unless-stopped`, so they come back up automatically after a reboot.
+### 🧱 Tech Stack
+
+| Layer | Technology |
+|---|---|
+| 🖥️ Frontend | React 18, Vite 5, react-markdown |
+| 📝 Prompts | `src/prompts.yaml`, loaded at build time via `@modyfi/vite-plugin-yaml` |
+| 🔀 API proxy | Node.js (no framework) |
+| 🌐 Static serving | nginx Alpine |
+| 🐳 Containerisation | Docker Compose, two services on an internal network |
+
+**Why a proxy?**
+Browsers cannot call the Anthropic API directly due to CORS restrictions. The proxy container sits between the browser and the API, attaches the user's key from the request header, and forwards the call. The key is never stored server-side; it travels only in the HTTP header of each request.
+
+**Why YAML for prompts?**
+Keeping prompts in `src/prompts.yaml` means you can tune agent behaviour without touching JavaScript. The file is imported at build time, so there is no runtime file-reading or extra API call. Edit the YAML, rebuild the container, done.
 
 ---
 
-## Usage Guide
+## 🤝 Contributing
 
-1. **Open the app** at `http://localhost:8081` (Docker) or `http://localhost:5173` (dev).
-
-2. **Set your API key** — click the ⚙️ gear icon (top-right) and paste your Anthropic API key. This is saved to `localStorage` and sent with every request. It is never logged or stored by the proxy.
-
-3. **Choose a model** in the Settings panel:
-   - **Claude Haiku 4.5** — fastest, cheapest, good for quick checks
-   - **Claude Sonnet 4.6** — balanced speed and quality (recommended)
-   - **Claude Opus 4.6** — most powerful, best for important submissions
-
-4. **Fill in the form:**
-   - **Session Title** — your proposed talk title
-   - **Abstract** — the full abstract text
-   - **Event URL** — the conference homepage
-   - **CFP URL** — the specific Call for Papers page
-
-5. **Click Evaluate** — agents run one after another with a configurable delay between calls (default: 15 s) to stay within Anthropic rate limits. A live countdown is shown between agents.
-
-6. **Review the results** — each agent's panel expands with its analysis. The final Synthesis panel includes:
-   - Acceptance likelihood % and audience appeal %
-   - Composite strengths and weaknesses
-   - Two alternative title rewrites
-   - A complete rewritten abstract
-   - Top 5 ranked action items
-
-7. **Export** — click **Export as Markdown** to download the full evaluation report.
-
-> **CFP access fallback:** If Claude cannot retrieve the CFP page (paywalled, login-required, etc.), the app prompts you to paste the raw CFP text manually before continuing.
+Got ideas for new workflows or improvements? Contributions are welcome! Feel free to open issues or submit pull requests.
 
 ---
 
-## Configuration
-
-All settings are stored in `localStorage` under the key `slayer-config`.
-
-| Setting | Default | Description |
-|---|---|---|
-| `apiKey` | `""` | Your Anthropic API key |
-| `model` | `claude-sonnet-4-6` | Claude model to use |
-| `agentDelay` | `15` seconds | Pause between sequential agent calls |
-
-The minimum allowed delay is **10 seconds** to avoid hitting Anthropic rate limits.
-
----
-
-## Project Structure
-
-```
-.
-├── src/
-│   ├── App.jsx          # Main UI — form, agent orchestration, results
-│   ├── App.css          # Styles
-│   ├── agents.js        # Agent definitions & synthesiser prompt
-│   └── main.jsx         # React entry point
-│
-├── proxy/
-│   ├── server.js        # Node.js Anthropic proxy (used in Docker)
-│   ├── package.json
-│   └── Dockerfile
-│
-├── server.js            # Same proxy — used during local development
-├── vite.config.js       # Vite + React plugin config
-├── nginx.conf           # Nginx config for the production container
-├── Dockerfile           # Multi-stage build: Vite → Nginx
-├── docker-compose.yml   # Orchestrates app + proxy services
-└── index.html           # HTML entry point
-```
-
----
-
-## License
-
-See [LICENSE](LICENSE).
+<div align="center"><br />
+    Made with ☕️ by Poncho Sandoval - <code>Developer Advocate 🥑 @ DevNet - Cisco Systems 🇵🇹</code><br /><br />
+    <a href="mailto:alfsando@cisco.com?subject=Question%20about%20[will-they-wont-they-cfp]&body=Hello,%0A%0AI%20have%20a%20question%20regarding%20your%20project.%0A%0AThanks!">
+        <img src="https://img.shields.io/badge/Contact%20me!-blue?style=flat&logo=gmail&labelColor=555555&logoColor=white" alt="Contact Me via Email!"/>
+    </a>
+    <a href="https://github.com/ponchotitlan/will-they-wont-they-cfp/issues/new">
+      <img src="https://img.shields.io/badge/Open%20Issue-2088FF?style=flat&logo=github&labelColor=555555&logoColor=white" alt="Open an Issue"/>
+    </a>
+    <a href="https://github.com/ponchotitlan/will-they-wont-they-cfp/fork">
+      <img src="https://img.shields.io/badge/Fork%20Repository-000000?style=flat&logo=github&labelColor=555555&logoColor=white" alt="Fork Repository"/>
+    </a>
+</div>

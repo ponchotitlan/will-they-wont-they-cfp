@@ -16,6 +16,6 @@
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.1",
     "vite": "^5.4.2",
-    "vite-plugin-yaml": "^3.0.1"
+    "@modyfi/vite-plugin-yaml": "^1.1.1"
   }
 }
