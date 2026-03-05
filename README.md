@@ -16,7 +16,7 @@
 
 ---
 
-> 🚨 This release works only for **Anthropic Claude API keys**. Further releases will include support for other vendors.
+> 🚨 This release works only for **Anthropic LLMs API keys**. Further releases will include support for other vendors.
 
 ---
 
@@ -33,7 +33,7 @@ You provide your session title, abstract, and the conference's CFP URL. The agen
 ```
 analyser [🔍] ──────────────► committee [🎯] ──┐
                               ▲           ├──► synthesiser [🧠]
-researcher [📚] ──┬───────────┘           │
+researcher [📚] ──────────────┘           │
              └──► audience [🙋] ──────────┘
 ```
 
@@ -81,11 +81,14 @@ docker compose down
 
 2. Click on the **⚙ Settings** panel and setup your Anthropic Claude API key. This key is stored in your browser's `localStorage`. It is never persisted on the server.
 
+> You can also adjust the delay between agent calls. This delay is required to avoid issues with the Claude API due to several requests from the same call, one after the other.
+
+</br>
 <div align="center">
 <img src="images/Will-They-Wont-They-CfP-setup.gif"/>
 </div>
+</br>
 
-> You can also adjust the delay between agent calls. This delay is required to avoid issues with the Claude API due to several requests from the same call, one after the other.
 
 3. Provide your session's title and abstract, the conference URL and the CfP (Call For Papers) URL. Then Click **⚡ RUN EVALUATION**.
 
@@ -93,9 +96,11 @@ docker compose down
 
 4. Once the agents have gathered their conclusions, they will be displayed on each card, along with the Committee Score and Attendee Score.
 
+</br>
 <div align="center">
 <img src="images/Will-They-Wont-They-CfP-run.gif"/>
 </div>
+</br>
 
 5. You can download a summary by clicking **↓ EXPORT AS .MD**, start again with for a new conference with **← EVALUATE ANOTHER SESSION**, or submit a new session for the same conference by clicking **↩ Try Another Session for This Event**.
 
@@ -104,10 +109,11 @@ docker compose down
 
 Once you have results, you can click **↩ Try Another Session for This Event**. The Analyser and Researcher outputs are preserved; only the Committee, Audience, and Synthesiser re-run with your new title and abstract. This saves time and API tokens when iterating or evaluating multiple submissions for the same conference.
 
+</br>
 <div align="center">
 <img src="images/Will-They-Wont-They-CfP-rerun.gif"/>
 </div>
-
+</br>
 
 ## 🔬 Behind the Curtains
 
