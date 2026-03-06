@@ -13,7 +13,7 @@ services:
     image: will-they-wont-they-cfp-app:latest
     container_name: will-they-wont-they-cfp-app
     ports:
-      - "8081:80"
+      - "8080:80"
     depends_on:
       - will-they-wont-they-cfp-proxy
     restart: unless-stopped

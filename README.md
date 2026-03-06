@@ -1,5 +1,9 @@
 <h1 align="center">✏️ Will They Won't They</h1>
-<div align="center">A Conference CFP (Call for Papers) Session Evaluator</div>
+<div align="center">A Multi-Agent Conference CFP (Call for Papers) Session Evaluator</div>
+</br>
+<div align="center">
+<img src="images/wtwt_cover.png"/>
+</div>
 
 ---
 
@@ -20,11 +24,12 @@
 
 ---
 
-You've written a conference session abstract. But will it get accepted? The CFP process can feel like a black box: criteria are vague, competition is real, and you rarely get feedback.
+You have something worth sharing. Conference organisers put real effort into curating sessions that serve their community. **They deserve submissions that are clear, relevant, and well-argued.**
 
-This tool puts your abstract in front of four AI agents, each reading it from a different angle: the person who wrote the call for papers, someone who knows the conference inside out, a programme committee reviewer, and a typical attendee. A fifth agent, the Synthesiser, reads all their outputs and gives you a consolidated report with rewrite suggestions.
+This tool helps you stress-test your abstract before you submit it. Not to game the process, but to make sure your idea comes across the way you intend it to.
 
-The goal is not to game the system. It's to help you understand how your abstract lands before you submit it.
+Your abstract is put in front of four AI agents, each reading it from a different angle: the person who wrote the call for papers, someone who knows the conference inside out, a programme committee reviewer, and a typical attendee. A fifth agent, the Synthesiser, reads all their outputs and gives you a consolidated report with rewrite suggestions.
+
 
 ## ⚙️ How It Works: The Agent Workflow
 
@@ -45,13 +50,13 @@ researcher [📚] ──────────────┘           │
 | 📚 **Conference Researcher** | Researches past accepted sessions and conference DNA | Event URL | Ethos, accepted talk patterns, rejection signals, trending topics, speaker archetypes |
 | 🎯 **Programme Committee Member** | Evaluates from the committee's perspective | Abstract + CFP analysis [🔍] + conference research [📚] | Scores on relevance, originality, clarity, credibility and value; top 3 rejection risks; top 3 edits |
 | 🙋 **Audience Member** | Evaluates from the attendee's perspective | Abstract + conference research [📚] | Scores on click-worthiness, clarity and FOMO; most compelling thing; biggest hesitation; title rewrite suggestion |
-| 🧠 **Synthesiser** | A senior conference coach | Committee [🎯] + Audience evaluations [🙋] | Composite scores, strengths, weaknesses, 2 title rewrites, full abstract rewrite, 5 ranked edits |
+| 🧠 **Synthesiser** | A senior conference coach | Committee [🎯] + Audience [🙋] evaluations | Composite scores, strengths, weaknesses, 2 title rewrites, full abstract rewrite, 5 ranked edits |
 
 ## 🚀 Deployment
 
 The app runs as two Docker containers managed by Docker Compose:
 
-- **`will-they-wont-they-cfp-app`**, the React frontend, built with Vite and served by nginx on port `8081`
+- **`will-they-wont-they-cfp-app`**, the React frontend, built with Vite and served by nginx on port `8080`
 - **`will-they-wont-they-cfp-proxy`**, a lightweight Node.js proxy that forwards requests to the Anthropic API
 
 ### 📋 Requirements
@@ -59,15 +64,31 @@ The app runs as two Docker containers managed by Docker Compose:
 - Docker and Docker Compose installed
 - An [Anthropic API key](https://console.anthropic.com/settings/keys)
 
+### ⚙️ Extra setup
+
+To adjust what the agents say or how they behave, edit [`src/prompts.yaml`](/src/prompts.yaml) and rebuild the container.
+
+The default port for the web browser is `8080`. You can change it in the [`docker-compose.yml`](/docker-compose.yml) file, under the `will-they-wont-they-cfp-app` service.
+
 ### ▶️ Running
 
 ```bash
-docker compose up --build
+docker compose up --build -d
 ```
 
-To adjust what the agents say or how they behave, edit `src/prompts.yaml` and rebuild the container. No JavaScript changes needed.
+To verify the creation of the containers, run the following command:
 
-The default port for the web browser is `8081`. You can change it in the `docker-compose.yml` file.
+```bash
+docker ps
+```
+
+You should see the two containers with their corresponding ports open:
+
+```bash
+CONTAINER ID   IMAGE                                                   COMMAND                  CREATED         STATUS         PORTS                  NAMES
+4a3dd5a3a76a   will-they-wont-they-cfp-app:latest                      "/docker-entrypoint.…"   5 seconds ago   Up 4 seconds   0.0.0.0:8080->80/tcp   will-they-wont-they-cfp-app
+228c9c47c579   will-they-wont-they-cfp-will-they-wont-they-cfp-proxy   "docker-entrypoint.s…"   5 seconds ago   Up 4 seconds   3001/tcp               will-they-wont-they-cfp-proxy
+```
 
 ### ⏹️ Stopping
 
@@ -77,7 +98,7 @@ docker compose down
 
 ### ✏️ How to Use
 
-1. Open [http://localhost:8081](http://localhost:8081) in your browser.
+1. Open [http://localhost:8080](http://localhost:8080) in your browser.
 
 2. Click on the **⚙ Settings** panel and setup your Anthropic Claude API key. This key is stored in your browser's `localStorage`. It is never persisted on the server.
 
@@ -121,7 +142,7 @@ Once you have results, you can click **↩ Try Another Session for This Event**.
 ┌─────────────────────────────────────────┐
 │              Browser                    │
 │                                         │
-│  React + Vite (served by nginx :8081)   │
+│  React + Vite (served by nginx :8080)   │
 │  • Stores API key in localStorage       │
 │  • Runs agents sequentially             │
 │  • Loads prompts from prompts.yaml      │

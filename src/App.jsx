@@ -393,7 +393,7 @@ ${truncate(results.audience)}
                 Will your session get accepted?
               </h1>
               <p className="idle-subtitle">
-                There is an audience out there that could benefit from your experience and insights. Your voice deserves to be heard. But the opaque selection process can feel like a huge barrier. This project aims to help you bring your session closer to potential attendees by simulating the evaluation process through the lens of multiple AI agents: CFP Analyser, Researcher, Committee Member, and Audience. <br></br><br></br><strong>To get started,</strong> provide your Claude API key in the settings, then enter your session title, abstract, and the conference's CFP URL. The agents will do their best to evaluate your session's chances and provide actionable feedback to improve it.
+                You have something worth sharing. Conference organisers put real effort into curating sessions that serve their community. <strong>They deserve submissions that are clear, relevant, and well-argued.</strong> This tool helps you stress-test your abstract before you submit it. Not to game the process, but to make sure your idea comes across the way you intend it to.Your abstract is put in front of four AI agents, each reading it from a different angle: the person who wrote the call for papers, someone who knows the conference inside out, a programme committee reviewer, and a typical attendee. A fifth agent, the Synthesiser, reads all their outputs and gives you a consolidated report with rewrite suggestions.
               </p>
             </div>
 
