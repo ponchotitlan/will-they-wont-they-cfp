@@ -45,7 +45,7 @@ export default function SessionEvaluator() {
 
   const [config, setConfig] = useState(() => {
     try {
-      const saved = JSON.parse(localStorage.getItem("slayer-config") || "{}");
+      const saved = JSON.parse(localStorage.getItem("will-they-wont-they-config") || "{}");
       return { ...DEFAULT_CONFIG, ...saved };
     } catch { return DEFAULT_CONFIG; }
   });
@@ -53,7 +53,7 @@ export default function SessionEvaluator() {
 
   // Persist config to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem("slayer-config", JSON.stringify(config));
+    localStorage.setItem("will-they-wont-they-config", JSON.stringify(config));
   }, [config]);
 
   const exportMarkdown = () => {

@@ -113,7 +113,19 @@ docker compose down
 
 3. Provide your session's title and abstract, the conference URL and the CfP (Call For Papers) URL. Then Click **⚡ RUN EVALUATION**.
 
+</br>
+<div align="center">
+<img src="images/Will-They-Wont-They-CfP-goodrun.gif"/>
+</div>
+</br>
+
 > If the `analyser` agent cannot fetch the information from the CfP URL, it will prompt you for manual copying/pasting of the CfP details.
+
+</br>
+<div align="center">
+<img src="images/Will-They-Wont-They-CfP-nourl.gif"/>
+</div>
+</br>
 
 4. Once the agents have gathered their conclusions, they will be displayed on each card, along with the Committee Score and Attendee Score.
 
@@ -168,16 +180,13 @@ Once you have results, you can click **↩ Try Another Session for This Event**.
 | Layer | Technology |
 |---|---|
 | 🖥️ Frontend | React 18, Vite 5, react-markdown |
-| 📝 Prompts | `src/prompts.yaml`, loaded at build time via `@modyfi/vite-plugin-yaml` |
+| 📝 Prompts | [`src/prompts.yaml`](/src/prompts.yaml), loaded at build time via `@modyfi/vite-plugin-yaml` |
 | 🔀 API proxy | Node.js (no framework) |
 | 🌐 Static serving | nginx Alpine |
 | 🐳 Containerisation | Docker Compose, two services on an internal network |
 
 **Why a proxy?**
 Browsers cannot call the Anthropic API directly due to CORS restrictions. The proxy container sits between the browser and the API, attaches the user's key from the request header, and forwards the call. The key is never stored server-side; it travels only in the HTTP header of each request.
-
-**Why YAML for prompts?**
-Keeping prompts in `src/prompts.yaml` means you can tune agent behaviour without touching JavaScript. The file is imported at build time, so there is no runtime file-reading or extra API call. Edit the YAML, rebuild the container, done.
 
 ---
 
