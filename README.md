@@ -72,6 +72,15 @@ The default port for the web browser is `8080`. You can change it in the [`docke
 
 ### ▶️ Running
 
+Clone the project in your host environment:
+
+```bash
+git clone https://github.com/ponchotitlan/will-they-wont-they-cfp
+cd will-they-wont-they-cfp
+```
+
+Execute the Docker Compose services within:
+
 ```bash
 docker compose up --build -d
 ```
