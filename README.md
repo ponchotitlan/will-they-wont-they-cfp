@@ -201,7 +201,16 @@ Browsers cannot call the Anthropic API directly due to CORS restrictions. The pr
 
 ## 🤝 Contributing
 
-Got ideas for new workflows or improvements? Contributions are welcome! Feel free to open issues or submit pull requests.
+Got ideas for new workflows or improvements? Contributions are welcome! Please use the templates below. They keep things consistent and make it much easier to review and act on your contribution.
+
+| Type | Link |
+|---|---|
+| 🐛 Bug Report | [Open a Bug Report](https://github.com/ponchotitlan/will-they-wont-they-cfp/issues/new?template=bug_report.md) |
+| ✨ Feature Request | [Open a Feature Request](https://github.com/ponchotitlan/will-they-wont-they-cfp/issues/new?template=feature_request.md) |
+| 📋 Task | [Open a Task](https://github.com/ponchotitlan/will-they-wont-they-cfp/issues/new?template=task.md) |
+| 🔀 Pull Request | [Open a Pull Request](https://github.com/ponchotitlan/will-they-wont-they-cfp/compare) |
+
+
 
 ---
 
