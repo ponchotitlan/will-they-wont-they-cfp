@@ -20,3 +20,4 @@ dist/
 # OS
 .DS_Store
 Thumbs.db
+proxy/certs.pem

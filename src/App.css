@@ -93,6 +93,16 @@ html {
   transition: all 0.2s;
 }
 
+.gear-icon {
+  display: block;
+  flex-shrink: 0;
+  transition: transform 0.3s ease, stroke 0.2s ease;
+}
+
+.gear-icon:hover {
+  transform: rotate(30deg);
+}
+
 /* ─── Page content ────────────────────────────────────────────────────────── */
 .page-content {
   max-width: 900px;
@@ -919,3 +929,31 @@ html {
 .md-content hr { border: none; border-top: 1px solid #1E2030; margin: 12px 0; }
 .md-content a { color: #00C2FF; text-decoration: none; }
 .md-content a:hover { text-decoration: underline; }
+
+/* ── Provider selector tabs ──────────────────────────────────────────────── */
+.provider-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.provider-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.provider-tab:hover {
+  background: #A78BFA11 !important;
+  border-color: #A78BFA44 !important;
+  color: #A78BFA !important;
+}
