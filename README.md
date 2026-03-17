@@ -104,7 +104,7 @@ docker compose down
 
 1. Open [http://localhost:8080](http://localhost:8080) in your browser.
 
-2. Click on the **⚙ Settings** panel and setup your Anthropic Claude API key. This key is stored in your browser's `localStorage`. It is never persisted on the server.
+2. Click on the **⚙ Settings** panel and setup your LLM API key. This key is stored in your browser's `localStorage`. It is never persisted on the server.
 
 > You can also adjust the delay between agent calls. This delay is required to avoid issues with the LLM API due to several requests from the same call, one after the other.
 
