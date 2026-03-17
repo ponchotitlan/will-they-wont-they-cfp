@@ -4,6 +4,8 @@ services:
       context: ./proxy
       dockerfile: Dockerfile
     container_name: will-they-wont-they-cfp-proxy
+    environment:
+      - NODE_TLS_REJECT_UNAUTHORIZED=0
     restart: unless-stopped
 
   will-they-wont-they-cfp-app:

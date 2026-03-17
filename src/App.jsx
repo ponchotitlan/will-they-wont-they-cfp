@@ -1,29 +1,29 @@
+// AI elements and other utils
 import { useState, useRef, useEffect } from "react";
-import { AGENTS, SYNTHESISER_PROMPT } from "./agents";
 import ReactMarkdown from "react-markdown";
+import { AGENTS, SYNTHESISER_PROMPT } from "./config/agents";
+import { DEFAULT_MODELS } from "./config/models";
+import { callLLM } from "./lib/llm";
+import { DEFAULT_CONFIG, analyserCouldNotAccess, extractScore } from "./lib/utils";
+
+// CSS styles
 import "./App.css";
 
-const GEAR_PATH = "M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z";
+// App components
+import ConfigPanel, { GearIcon } from "./components/ConfigPanel";
+import Field from "./components/Field";
+import ScoreCard from "./components/ScoreCard";
+import AgentReport from "./components/AgentReport";
 
-function GearIcon({ size = 16, color = "#6B7280" }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
-      stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="3"/>
-      <path d={GEAR_PATH}/>
-    </svg>
-  );
-}
+const APP_DEFAULT_CONFIG = { ...DEFAULT_CONFIG, model: DEFAULT_MODELS.anthropic };
 
-const CLAUDE_MODELS = [
-  { id: "claude-opus-4-6",           label: "Claude Opus 4.6",    desc: "Most intelligent · best for complex evaluation" },
-  { id: "claude-sonnet-4-6",         label: "Claude Sonnet 4.6",  desc: "Speed + intelligence · recommended" },
-  { id: "claude-haiku-4-5-20251001", label: "Claude Haiku 4.5",   desc: "Fastest & cheapest · good for quick checks" },
-];
-
-const MIN_DELAY_SECONDS = 10;
-const DEFAULT_CONFIG = { apiKey: "", model: "claude-sonnet-4-6", agentDelay: 15 };
-
+/**
+ * Root application component. Manages the full evaluation lifecycle:
+ * idle form → running (multi-agent LLM calls with rate-limit countdowns) →
+ * done (results + scores) → optional resubmit for the same event.
+ *
+ * All LLM provider settings and API keys are persisted to localStorage.
+ */
 export default function SessionEvaluator() {
   const [title, setTitle] = useState("");
   const [abstract, setAbstract] = useState("");
@@ -43,11 +43,12 @@ export default function SessionEvaluator() {
   const resultsRef = useRef(null);
   const cfpTextResolverRef = useRef(null);
 
+  // Load config from localStorage or use defaults
   const [config, setConfig] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem("will-they-wont-they-config") || "{}");
-      return { ...DEFAULT_CONFIG, ...saved };
-    } catch { return DEFAULT_CONFIG; }
+      return { ...APP_DEFAULT_CONFIG, ...saved };
+    } catch { return APP_DEFAULT_CONFIG; }
   });
   const [configOpen, setConfigOpen] = useState(false);
 
@@ -56,6 +57,7 @@ export default function SessionEvaluator() {
     localStorage.setItem("will-they-wont-they-config", JSON.stringify(config));
   }, [config]);
 
+  // Export the full evaluation report as a Markdown file
   const exportMarkdown = () => {
     const lines = [];
     lines.push(`# CfP Evaluation: ${title || "Untitled Session"}`);
@@ -90,29 +92,21 @@ export default function SessionEvaluator() {
     URL.revokeObjectURL(url);
   };
 
-  const analyserCouldNotAccess = (text) => {
-    if (!text) return false;
-    const lower = text.toLowerCase();
-    return [
-      "cannot access", "can't access", "unable to access", "couldn't access",
-      "not able to access", "i cannot browse", "don't have access",
-      "could you please", "could you provide", "please provide", "please share",
-      "paste the", "copy and paste",
-    ].some((phrase) => lower.includes(phrase));
-  };
-
+  // Prompts the user to paste the CFP text when the analyser agent fails to access the URL. Returns a promise that resolves with the pasted text.
   const waitForCfpText = () =>
     new Promise((resolve) => {
       setNeedsCfpText(true);
       cfpTextResolverRef.current = resolve;
     });
 
+  // Called when the user submits the pasted CFP text. Resolves the waiting promise and continues the evaluation.  
   const submitCfpText = (text) => {
     setNeedsCfpText(false);
     cfpTextResolverRef.current?.(text);
     cfpTextResolverRef.current = null;
   };
 
+  // Utility function to create a countdown timer for rate-limiting between agent calls. Updates the `countdown` state every second and resolves after the specified time.
   const sleepWithCountdown = async (ms) => {
     const seconds = Math.ceil(ms / 1000);
     for (let i = seconds; i > 0; i--) {
@@ -122,37 +116,18 @@ export default function SessionEvaluator() {
     setCountdown(0);
   };
 
-  const callClaude = async (systemPrompt, userMessage, maxTokens = 1000) => {
-    const headers = {
-      "Content-Type": "application/json",
-      "anthropic-version": "2023-06-01",
-    };
-    if (config.apiKey) headers["x-user-api-key"] = config.apiKey;
-    const response = await fetch("/api/messages", {
-      method: "POST",
-      headers,
-      body: JSON.stringify({
-        model: config.model,
-        max_tokens: maxTokens,
-        system: systemPrompt,
-        messages: [{ role: "user", content: userMessage }],
-      }),
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error?.message || "API error");
-    return data.content
-      .map((b) => b.text || "")
-      .filter(Boolean)
-      .join("\n");
-  };
+  // Wrapper around the callLLM function that automatically includes the current config and allows overriding maxTokens.
+  const callLLMWithConfig = (systemPrompt, userMessage, maxTokens = 1000) =>
+    callLLM(config, systemPrompt, userMessage, maxTokens);
 
+  // Main function to run the full evaluation lifecycle: validates input, iterates through agents with appropriate delays, handles CFP text fallback, and compiles the final synthesis.
   const runEvaluation = async () => {
     if (!title.trim() || !abstract.trim()) {
       setError("Please provide at least a title and abstract.");
       return;
     }
     if (!config.apiKey) {
-      setError("No API key configured. Open ⚙ Settings and enter your Anthropic API key.");
+      setError("No API key configured. Open ⚙ Settings and enter your API key.");
       return;
     }
     setError("");
@@ -189,7 +164,7 @@ ${extraText.trim() ? `\nCALL FOR PAPERS TEXT:\n${extraText.trim()}` : ""}
       if (index > 0) await sleepWithCountdown(config.agentDelay * 1000);
       setActiveAgent(agent.id);
       try {
-        const result = await callClaude(agent.role, buildAgentMessage(agent.id));
+        const result = await callLLMWithConfig(agent.role, buildAgentMessage(agent.id));
         results[agent.id] = result;
         setAgentResults((prev) => ({ ...prev, [agent.id]: result }));
         setAgentProgress((prev) => [...prev, agent.id]);
@@ -203,7 +178,7 @@ ${extraText.trim() ? `\nCALL FOR PAPERS TEXT:\n${extraText.trim()}` : ""}
           setAgentProgress((prev) => prev.filter((id) => id !== "analyser"));
           setActiveAgent("analyser");
           await sleepWithCountdown(config.agentDelay * 1000); // respect rate limit before retry
-          const retryResult = await callClaude(agent.role, buildAgentMessage(agent.id));
+          const retryResult = await callLLMWithConfig(agent.role, buildAgentMessage(agent.id));
           results[agent.id] = retryResult;
           setAgentResults((prev) => ({ ...prev, [agent.id]: retryResult }));
           setAgentProgress((prev) => [...prev, "analyser"]);
@@ -233,7 +208,7 @@ ${truncate(results.audience)}
     `.trim();
 
     try {
-      const synth = await callClaude(SYNTHESISER_PROMPT, synthesisInput, 4096);
+      const synth = await callLLMWithConfig(SYNTHESISER_PROMPT, synthesisInput, 4096);
       setSynthesis(synth);
     } catch (e) {
       setSynthesis(`⚠️ Synthesis failed: ${e.message}`);
@@ -244,6 +219,7 @@ ${truncate(results.audience)}
     setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
   };
 
+  // Resets the app to the initial idle state, clearing all inputs and results. Called when the user wants to evaluate a completely new session.
   const reset = () => {
     setPhase("idle");
     setAgentResults({});
@@ -256,6 +232,7 @@ ${truncate(results.audience)}
     cfpTextResolverRef.current = null;
   };
 
+  // Starts the resubmit flow, which allows the user to enter a new title and abstract for the same event. The CFP analysis and conference research are preserved, and only the Committee and Audience agents will re-run.
   const startResubmit = () => {
     setResubmitTitle("");
     setResubmitAbstract("");
@@ -263,6 +240,7 @@ ${truncate(results.audience)}
     setPhase("resubmit");
   };
 
+  // Runs the evaluation again with the new title and abstract, preserving the analyser and researcher results. Only the Committee and Audience agents will re-run, using the same CFP analysis and conference research.
   const runResubmit = async () => {
     if (!resubmitTitle.trim() || !resubmitAbstract.trim()) {
       setError("Please provide a title and abstract for the new session.");
@@ -306,7 +284,7 @@ ${cfpText.trim() ? `\nCALL FOR PAPERS TEXT:\n${cfpText.trim()}` : ""}
       if (index > 0) await sleepWithCountdown(config.agentDelay * 1000);
       setActiveAgent(agent.id);
       try {
-        const result = await callClaude(agent.role, buildMsg(agent.id));
+        const result = await callLLMWithConfig(agent.role, buildMsg(agent.id));
         results[agent.id] = result;
         setAgentResults((prev) => ({ ...prev, [agent.id]: result }));
         setAgentProgress((prev) => [...prev, agent.id]);
@@ -335,7 +313,7 @@ ${truncate(results.audience)}
     `.trim();
 
     try {
-      const synth = await callClaude(SYNTHESISER_PROMPT, synthesisInput, 4096);
+      const synth = await callLLMWithConfig(SYNTHESISER_PROMPT, synthesisInput, 4096);
       setSynthesis(synth);
     } catch (e) {
       setSynthesis(`⚠️ Synthesis failed: ${e.message}`);
@@ -346,14 +324,10 @@ ${truncate(results.audience)}
     setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
   };
 
-  const extractScore = (text, label) => {
-    const match = text?.match(new RegExp(`${label}[^\\d]*(\\d+)\\s*%`, "i"));
-    return match ? parseInt(match[1]) : null;
-  };
-
   const acceptanceScore = extractScore(synthesis, "Acceptance Likelihood");
   const audienceScore = extractScore(synthesis, "Audience Appeal");
 
+  // Main render function with conditional views for each phase of the app lifecycle. Includes the header, form inputs, agent progress indicators, and results display.
   return (
     <div className="app-root">
       {/* ── Header ── */}
@@ -686,187 +660,3 @@ ${truncate(results.audience)}
     </div>
   );
 }
-
-// ─── Sub-components ───────────────────────────────────────────────────────────
-
-function Field({ label, children, hint }) {
-  return (
-    <div>
-      <div className="field-label-row">
-        <label className="field-label">{label}</label>
-        {hint && <span className="field-hint">{hint}</span>}
-      </div>
-      {children}
-    </div>
-  );
-}
-
-function ScoreCard({ label, score, color, icon }) {
-  const valueColor = score >= 70 ? color : score >= 50 ? "#F59E0B" : "#F87171";
-  return (
-    <div className="score-card" style={{ border: `1px solid ${color}44` }}>
-      <div className="score-card-icon">{icon}</div>
-      <div className="score-card-label">{label}</div>
-      <div className="score-card-value" style={{ color: valueColor }}>
-        {score != null ? `${score}%` : "—"}
-      </div>
-      <div className="score-card-bar-track">
-        <div className="score-card-bar-fill" style={{
-          width: score != null ? `${score}%` : "0%",
-          background: `linear-gradient(90deg, ${color}, ${color}88)`,
-        }} />
-      </div>
-    </div>
-  );
-}
-
-function AgentReport({ agent, content }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="agent-report"
-      style={{ border: `1px solid ${open ? agent.color + "44" : "#1E2030"}` }}>
-      <button onClick={() => setOpen(!open)} className="agent-report-toggle">
-        <span className="agent-report-icon">{agent.icon}</span>
-        <span className="agent-report-name" style={{ color: agent.color }}>
-          {agent.label}
-        </span>
-        <span className="agent-report-toggle-label">{open ? "▲ HIDE" : "▼ VIEW"}</span>
-      </button>
-      {open && (
-        <div className="agent-report-body md-content"
-          style={{ borderTop: `1px solid ${agent.color}22` }}>
-          <ReactMarkdown>{content}</ReactMarkdown>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ─── Settings / Config panel ──────────────────────────────────────────────────
-
-function ConfigPanel({ config, onSave, onClose }) {
-  const [draft, setDraft] = useState({ ...config });
-  const [showKey, setShowKey] = useState(false);
-  const [delayError, setDelayError] = useState("");
-  const [showDelayTip, setShowDelayTip] = useState(false);
-
-  const delayTipText = `The Anthropic API enforces a rate limit of 30,000 input tokens per minute on most plans. Each agent call consumes ~800–1,200 tokens. Firing all 5 calls (4 agents + synthesis) back-to-back typically exceeds this limit within the first minute. A delay of at least ${MIN_DELAY_SECONDS}s between calls spreads them across the window and prevents "rate limit exceeded" errors. Longer delays = more headroom; 15s is the recommended default.`;
-
-  const handleSave = () => {
-    const d = parseInt(draft.agentDelay, 10);
-    if (isNaN(d) || d < MIN_DELAY_SECONDS) {
-      setDelayError(`Minimum is ${MIN_DELAY_SECONDS} seconds.`);
-      return;
-    }
-    onSave({ ...draft, agentDelay: d });
-  };
-
-  return (
-    <div className="config-overlay" onClick={onClose}>
-      <div className="config-modal" onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
-        <div className="config-modal-header">
-          <GearIcon size={20} color="#A78BFA" />
-          <div style={{ flex: 1 }}>
-            <div className="config-modal-title">SETTINGS</div>
-            <div className="config-modal-sub">Stored locally in your browser</div>
-          </div>
-          <button onClick={onClose} className="config-modal-close">×</button>
-        </div>
-
-        <div className="config-fields">
-          {/* API Key */}
-          <div>
-            <label className="config-label">ANTHROPIC API KEY</label>
-            <div className="api-key-wrap">
-              <input
-                type={showKey ? "text" : "password"}
-                value={draft.apiKey}
-                onChange={(e) => setDraft({ ...draft, apiKey: e.target.value })}
-                placeholder="sk-ant-..."
-                className="config-input config-input--with-btn"
-                style={{
-                  fontFamily: showKey ? "'IBM Plex Mono', monospace" : "monospace",
-                  letterSpacing: showKey ? "normal" : "0.1em",
-                }}
-              />
-              <button onClick={() => setShowKey(!showKey)}
-                title={showKey ? "Hide key" : "Reveal key"}
-                className="api-key-reveal">
-                {showKey ? "🙈" : "👁"}
-              </button>
-            </div>
-            <div className="api-key-hint">
-              Get yours at{" "}
-              <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noreferrer">
-                console.anthropic.com
-              </a>. Never leaves your device.
-            </div>
-          </div>
-
-          {/* Model */}
-          <div>
-            <label className="config-label">MODEL</label>
-            <select
-              value={draft.model}
-              onChange={(e) => setDraft({ ...draft, model: e.target.value })}
-              className="config-input"
-              style={{ cursor: "pointer" }}
-            >
-              {CLAUDE_MODELS.map((m) => (
-                <option key={m.id} value={m.id}>{m.label} — {m.desc}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Agent delay */}
-          <div>
-            <div className="delay-label-row">
-              <label className="config-label" style={{ margin: 0 }}>
-                DELAY BETWEEN AGENTS (seconds)
-              </label>
-              <span
-                onMouseEnter={() => setShowDelayTip(true)}
-                onMouseLeave={() => setShowDelayTip(false)}
-                onClick={() => setShowDelayTip((v) => !v)}
-                className="info-btn"
-                style={{
-                  background: showDelayTip ? "#A78BFA" : "#1E2030",
-                  color:      showDelayTip ? "#0D0F1A" : "#6B7280",
-                }}
-              >
-                i
-                {showDelayTip && (
-                  <div className="info-tooltip">
-                    <div className="info-tooltip-title">WHY IS THIS NECESSARY?</div>
-                    {delayTipText}
-                    <div className="info-tooltip-arrow" />
-                  </div>
-                )}
-              </span>
-            </div>
-            <div className="delay-input-row">
-              <input
-                type="number"
-                min={MIN_DELAY_SECONDS}
-                value={draft.agentDelay}
-                onChange={(e) => { setDraft({ ...draft, agentDelay: e.target.value }); setDelayError(""); }}
-                className="config-input"
-                style={{ width: 100 }}
-              />
-              <span className="delay-hint">min {MIN_DELAY_SECONDS}s · recommended 15s</span>
-            </div>
-            {delayError && <div className="delay-error">{delayError}</div>}
-          </div>
-        </div>
-
-        {/* Actions */}
-        <div className="config-actions">
-          <button onClick={handleSave} className="btn-save">SAVE SETTINGS</button>
-          <button onClick={onClose}    className="btn-cancel">Cancel</button>
-        </div>
-      </div>
-    </div>
-  );
-}
-

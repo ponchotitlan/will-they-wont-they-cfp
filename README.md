@@ -1,4 +1,4 @@
-<h1 align="center">✏️ Will They Won't They</h1>
+<h1 align="center">✏️ Will They Won't They CFP</h1>
 <div align="center">A Multi-Agent Conference CFP (Call for Papers) Session Evaluator</div>
 </br>
 <div align="center">
@@ -14,13 +14,8 @@
     <img src="https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=nodedotjs&logoColor=white" alt="Node.js">
     <img src="https://img.shields.io/badge/nginx-009639?style=flat-square&logo=nginx&logoColor=white" alt="nginx">
     <img src="https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white" alt="Docker">
-    <img src="https://img.shields.io/badge/Claude-Anthropic-D97757?style=flat-square&logo=anthropic&logoColor=white" alt="Claude">
     <img src="https://img.shields.io/badge/Agentic_AI-Multi--Agent-8A2BE2?style=flat-square&logo=sparkles&logoColor=white" alt="Agentic AI">
 </div>
-
----
-
-> 🚨 This release works only for **Anthropic LLMs API keys**. Further releases will include support for other vendors.
 
 ---
 
@@ -66,7 +61,7 @@ The app runs as two Docker containers managed by Docker Compose:
 
 ### ⚙️ Extra setup
 
-To adjust what the agents say or how they behave, edit [`src/prompts.yaml`](/src/prompts.yaml) and rebuild the container.
+To adjust what the agents say or how they behave, edit [`src/config/prompts.yaml`](/src/config/prompts.yaml) and rebuild the container.
 
 The default port for the web browser is `8080`. You can change it in the [`docker-compose.yml`](/docker-compose.yml) file, under the `will-they-wont-they-cfp-app` service.
 
@@ -109,9 +104,11 @@ docker compose down
 
 1. Open [http://localhost:8080](http://localhost:8080) in your browser.
 
-2. Click on the **⚙ Settings** panel and setup your Anthropic Claude API key. This key is stored in your browser's `localStorage`. It is never persisted on the server.
+2. Click on the **⚙ Settings** panel and setup your LLM API key. This key is stored in your browser's `localStorage`. It is never persisted on the server.
 
-> You can also adjust the delay between agent calls. This delay is required to avoid issues with the Claude API due to several requests from the same call, one after the other.
+> You can also adjust the delay between agent calls. This delay is required to avoid issues with the LLM API due to several requests from the same call, one after the other.
+
+> Currently supported LLM providers are [Anthropic 🔷](https://console.anthropic.com/settings/keys), [OpenAI 🟢](https://platform.openai.com/api-keys) and [Google Gemini 🔴](https://aistudio.google.com/apikey).
 
 </br>
 <div align="center">
@@ -159,43 +156,7 @@ Once you have results, you can click **↩ Try Another Session for This Event**.
 
 ## 🔬 Behind the Curtains
 
-```
-┌─────────────────────────────────────────┐
-│              Browser                    │
-│                                         │
-│  React + Vite (served by nginx :8080)   │
-│  • Stores API key in localStorage       │
-│  • Runs agents sequentially             │
-│  • Loads prompts from prompts.yaml      │
-└───────────────────┬─────────────────────┘
-                    │ POST /api/messages
-                    │ (x-user-api-key header)
-                    ▼
-┌─────────────────────────────────────────┐
-│           Proxy Container               │
-│                                         │
-│  Node.js HTTP server (:3001)            │
-│  • Validates API key is present         │
-│  • Forwards request to Anthropic        │
-│  • Streams response back to browser     │
-└───────────────────┬─────────────────────┘
-                    │ HTTPS
-                    ▼
-         api.anthropic.com/v1/messages
-```
-
-### 🧱 Tech Stack
-
-| Layer | Technology |
-|---|---|
-| 🖥️ Frontend | React 18, Vite 5, react-markdown |
-| 📝 Prompts | [`src/prompts.yaml`](/src/prompts.yaml), loaded at build time via `@modyfi/vite-plugin-yaml` |
-| 🔀 API proxy | Node.js (no framework) |
-| 🌐 Static serving | nginx Alpine |
-| 🐳 Containerisation | Docker Compose, two services on an internal network |
-
-**Why a proxy?**
-Browsers cannot call the Anthropic API directly due to CORS restrictions. The proxy container sits between the browser and the API, attaches the user's key from the request header, and forwards the call. The key is never stored server-side; it travels only in the HTTP header of each request.
+Check the tech stack, app workflows and other technical details [in this document](ARCHITECTURE.md).
 
 ---
 
@@ -218,9 +179,6 @@ Got ideas for new workflows or improvements? Contributions are welcome! Please u
     Made with ☕️ by Poncho Sandoval - <code>Developer Advocate 🥑 @ DevNet - Cisco Systems 🇵🇹</code><br /><br />
     <a href="mailto:alfsando@cisco.com?subject=Question%20about%20[will-they-wont-they-cfp]&body=Hello,%0A%0AI%20have%20a%20question%20regarding%20your%20project.%0A%0AThanks!">
         <img src="https://img.shields.io/badge/Contact%20me!-blue?style=flat&logo=gmail&labelColor=555555&logoColor=white" alt="Contact Me via Email!"/>
-    </a>
-    <a href="https://github.com/ponchotitlan/will-they-wont-they-cfp/issues/new">
-      <img src="https://img.shields.io/badge/Open%20Issue-2088FF?style=flat&logo=github&labelColor=555555&logoColor=white" alt="Open an Issue"/>
     </a>
     <a href="https://github.com/ponchotitlan/will-they-wont-they-cfp/fork">
       <img src="https://img.shields.io/badge/Fork%20Repository-000000?style=flat&logo=github&labelColor=555555&logoColor=white" alt="Fork Repository"/>
