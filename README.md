@@ -180,9 +180,6 @@ Got ideas for new workflows or improvements? Contributions are welcome! Please u
     <a href="mailto:alfsando@cisco.com?subject=Question%20about%20[will-they-wont-they-cfp]&body=Hello,%0A%0AI%20have%20a%20question%20regarding%20your%20project.%0A%0AThanks!">
         <img src="https://img.shields.io/badge/Contact%20me!-blue?style=flat&logo=gmail&labelColor=555555&logoColor=white" alt="Contact Me via Email!"/>
     </a>
-    <a href="https://github.com/ponchotitlan/will-they-wont-they-cfp/issues/new">
-      <img src="https://img.shields.io/badge/Open%20Issue-2088FF?style=flat&logo=github&labelColor=555555&logoColor=white" alt="Open an Issue"/>
-    </a>
     <a href="https://github.com/ponchotitlan/will-they-wont-they-cfp/fork">
       <img src="https://img.shields.io/badge/Fork%20Repository-000000?style=flat&logo=github&labelColor=555555&logoColor=white" alt="Fork Repository"/>
     </a>
