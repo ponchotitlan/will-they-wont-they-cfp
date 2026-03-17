@@ -112,7 +112,7 @@ docker compose down
 
 </br>
 <div align="center">
-<img src="images/Will-They-Wont-They-CfP-setup.gif"/>
+<img src="images/Will-They-Wont-They-CfP-setup_.gif"/>
 </div>
 </br>
 
