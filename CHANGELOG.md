@@ -7,8 +7,14 @@ and this project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
 <!-- textlint-disable -->
+## [0.2.1] - 2025-03-20
 
-## [0.1.1] - 2025-03-16
+### Added
+
+* Alignment of all templates, docs and headers with the oss-template provided by cisco-ospo
+* This is in the hopes of turning this project part of the Cisco Open Source catalogue
+
+## [0.2.0] - 2025-03-16
 
 ### Added
 
@@ -17,7 +23,7 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 * Hardcoded available model names based on each vendor's official documentation
 * Usage of Vercel's libraries for abstracting each vendor's API calling. We only send the payload, token in the header and model of choice. No hardcoded URLs
 
-## [0.2.0] - 2025-03-17
+## [0.1.1] - 2025-03-17
 
 ### Added
 
