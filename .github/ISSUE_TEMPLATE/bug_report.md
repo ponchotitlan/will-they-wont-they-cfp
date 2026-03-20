@@ -54,7 +54,7 @@ body:
       label: Checklist
       description: By submitting this issue, you agree to the following
       options:
-        - label: I have read the [contributing guidelines](../../CONTRIBUTING.md)
+        - label: I have read the [contributing guidelines](https://github.com/ponchotitlan/will-they-wont-they-cfp/blob/main/CONTRIBUTING.md)
           required: true
         - label: I have verified this does not duplicate an existing issue
           required: true
