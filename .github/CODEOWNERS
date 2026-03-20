@@ -12,8 +12,8 @@
 # the repository. Unless a later match takes precedence,
 # the following users/teams will be requested for
 # review when someone opens a pull request.
-* @cisco-open/ponchotitlan
+* @ponchotitlan
 
 # Enforces admin protections for repo configuration via probot settings app.
 # ref: https://github.com/probot/settings#security-implications
-.github/settings.yml @cisco-open/ponchotitlan
+.github/settings.yml @ponchotitlan
