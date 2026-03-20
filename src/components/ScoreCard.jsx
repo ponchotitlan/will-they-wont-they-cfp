@@ -1,3 +1,7 @@
+// Copyright 2026 Cisco Systems, Inc. and its affiliates
+//
+// SPDX-License-Identifier: Apache-2.0
+
 /**
  * Displays a single percentage score with a label, colour-coded value, and a
  * progress bar. The value colour shifts from green → amber → red based on the
