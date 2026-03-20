@@ -1,30 +1,60 @@
 ---
 name: Bug Report
-about: Something is broken
-labels: bug
----
-
-## Description
-<!-- Clear and concise description of the bug. -->
-
-## Steps to Reproduce
-1. 
-2. 
-3. 
-
-## Expected Behavior
-<!-- What should have happened? -->
-
-## Actual Behavior
-<!-- What actually happened? -->
-
-## Environment
-- OS:
-- Python / Node version:
-- Relevant package versions:
-
-## Logs / Screenshots
-<!-- Paste any relevant output, stack traces, or screenshots. -->
-
-## Additional Context
-<!-- Anything else that might help? -->
+description: Report a bug to help us improve.
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: Please provide a description of the problem
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: Please describe what you expected would happen
+    validations:
+      required: true
+  - type: dropdown
+    id: version
+    attributes:
+      label: Affected Version
+      description: |
+        If applicable, provide the version number or release tag where this
+        issue was encountered
+      options:
+        - v0.2.0
+        - v0.1.1
+        - v0.1.0
+      default: 0
+    validations:
+      required: false
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Please provide all steps to reproduce the behavior
+      placeholder: |
+        1. In this environment...
+        1. With this config...
+        1. Run `this command`...
+        1. See error...
+    validations:
+      required: true
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      description: By submitting this issue, you agree to the following
+      options:
+        - label: I have read the [contributing guidelines](../../CONTRIBUTING.md)
+          required: true
+        - label: I have verified this does not duplicate an existing issue
+          required: true
