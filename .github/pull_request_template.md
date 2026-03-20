@@ -1,26 +1,28 @@
-## Summary
-<!-- What does this PR do? One or two sentences max. -->
+# Description
 
-## Changes
-<!-- List the key changes introduced. Be specific. -->
-- 
-- 
-- 
+Please provide a meaningful description of what this change will do, or is for.
+Bonus points for including links to related issues, other PRs, or technical
+references.
+
+Note that by _not_ including a description, you are asking reviewers to do extra
+work to understand the context of this change, which may lead to your PR taking
+much longer to review, or result in it not being reviewed at all.
 
 ## Type of Change
-<!-- Check all that apply -->
-- [ ] Bug fix
-- [ ] New feature
+
+- [ ] Bugfix
+- [ ] New Feature
+- [ ] Breaking Change
 - [ ] Refactor
-- [ ] Docs update
-- [ ] Breaking change
+- [ ] Documentation
+- [ ] Other (please describe)
 
-## How to Test
-<!-- Steps to verify the changes work as expected. -->
-1. 
-2. 
-3. 
+## Checklist
 
-## Related Issues / Tickets
-<!-- Link issues this PR closes or references. -->
-Closes #
+- [ ] I have read the [contributing guidelines](../CONTRIBUTING.md)
+- [ ] Existing issues have been referenced (where applicable)
+- [ ] I have verified this change is not present in other open pull requests
+- [ ] Functionality is documented
+- [ ] All code style checks pass
+- [ ] New code contribution is covered by automated tests
+- [ ] All new and existing tests pass
