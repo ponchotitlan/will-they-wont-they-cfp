@@ -6,13 +6,13 @@ repository:
   # See https://developer.github.com/v3/repos/#edit for all available settings.
 
   # The name of the repository. Changing this will rename the repository
-  name: will-they-wont-they-cfp
+  name: cfp-session-eval-council
 
   # A short description of the repository that will show up on GitHub
   description: A Multi-Agent Conference CFP (Call for Papers) Session Evaluator
 
   # A URL with more information about the repository
-  #homepage: https://github.com/ponchotitlan/will-they-wont-they-cfp
+  #homepage: https://github.com/ponchotitlan/cfp-session-eval-council
 
   # A comma-separated list of topics to set on the repository
   #topics: conference, multi-agent, call-for-papers, cfp, agentic-ai

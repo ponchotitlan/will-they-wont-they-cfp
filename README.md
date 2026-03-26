@@ -1,8 +1,8 @@
-<h1 align="center">✏️ Will They Won't They CFP</h1>
+<h1 align="center">✏️ CFP Session Eval Council</h1>
 <div align="center">A Multi-Agent Conference CFP (Call for Papers) Session Evaluator</div>
 </br>
 <div align="center">
-<img src="images/wtwt_cover.png"/>
+<img src="images/cfp-session-eval-council_banner.png"/>
 </div>
 
 ---
@@ -51,8 +51,8 @@ researcher [📚] ──────────────┘           │
 
 The app runs as two Docker containers managed by Docker Compose:
 
-- **`will-they-wont-they-cfp-app`**, the React frontend, built with Vite and served by nginx on port `8080`
-- **`will-they-wont-they-cfp-proxy`**, a lightweight Node.js proxy that forwards requests to the Anthropic API
+- **`cfp-session-eval-council-app`**, the React frontend, built with Vite and served by nginx on port `8080`
+- **`cfp-session-eval-council-proxy`**, a lightweight Node.js proxy that forwards requests to the Anthropic API
 
 ### Requirements
 
@@ -63,15 +63,15 @@ The app runs as two Docker containers managed by Docker Compose:
 
 To adjust what the agents say or how they behave, edit [`src/config/prompts.yaml`](/src/config/prompts.yaml) and rebuild the container.
 
-The default port for the web browser is `8080`. You can change it in the [`docker-compose.yml`](/docker-compose.yml) file, under the `will-they-wont-they-cfp-app` service.
+The default port for the web browser is `8080`. You can change it in the [`docker-compose.yml`](/docker-compose.yml) file, under the `cfp-session-eval-council-app` service.
 
 ### Running
 
 Clone the project in your host environment:
 
 ```bash
-git clone https://github.com/ponchotitlan/will-they-wont-they-cfp
-cd will-they-wont-they-cfp
+git clone https://github.com/ponchotitlan/cfp-session-eval-council
+cd cfp-session-eval-council
 ```
 
 Execute the Docker Compose services within:
@@ -98,32 +98,28 @@ docker compose down
 
 </br>
 <div align="center">
-<img src="images/Will-They-Wont-They-CfP-setup_.gif"/>
+<img src="images/cfp_session_eval_council_01_config.gif"/>
 </div>
 </br>
 
 
 3. Provide your session's title and abstract, the conference URL and the CfP (Call For Papers) URL. Then Click **⚡ RUN EVALUATION**.
-
-</br>
-<div align="center">
-<img src="images/Will-They-Wont-They-CfP-goodrun.gif"/>
-</div>
-</br>
-
 > If the `analyser` agent cannot fetch the information from the CfP URL, it will prompt you for manual copying/pasting of the CfP details.
 
 </br>
 <div align="center">
-<img src="images/Will-They-Wont-They-CfP-nourl.gif"/>
+<img src="images/cfp_session_eval_council_02_run.gif"/>
 </div>
 </br>
+
 
 4. Once the agents have gathered their conclusions, they will be displayed on each card, along with the Committee Score and Attendee Score.
 
 </br>
 <div align="center">
-<img src="images/Will-They-Wont-They-CfP-run.gif"/>
+<img src="images/cfp-session-eval-council_card.png"/>
+<img src="images/cfp-session-eval-council_synthesis.png"/>
+<img src="images/cfp-session-eval-council_suggestions.png"/>
 </div>
 </br>
 
@@ -136,7 +132,7 @@ Once you have results, you can click **↩ Try Another Session for This Event**.
 
 </br>
 <div align="center">
-<img src="images/Will-They-Wont-They-CfP-rerun.gif"/>
+<img src="images/cfp-session-eval-council_suggestions_resubmit.png"/>
 </div>
 </br>
 
@@ -145,18 +141,18 @@ Once you have results, you can click **↩ Try Another Session for This Event**.
 Check the tech stack, app workflows and other technical details [in this document](ARCHITECTURE.md).
 
 ## Roadmap
-See the [open issues](https://github.com/ponchotitlan/will-they-wont-they-cfp/issues) for a list of proposed features (and known issues).
+See the [open issues](https://github.com/ponchotitlan/cfp-session-eval-council/issues) for a list of proposed features (and known issues).
 
 ## Contributing
 Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are greatly appreciated. For detailed contributing guidelines, please see [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## License
-Distributed under the [Apache License 2.0](https://github.com/ponchotitlan/will-they-wont-they-cfp/blob/main/LICENSE) License. See LICENSE for more information.
+Distributed under the [Apache License 2.0](https://github.com/ponchotitlan/cfp-session-eval-council/blob/main/LICENSE) License. See LICENSE for more information.
 
 ## Contact
 Alfonso (Poncho) Sandoval - asandovalros@gmail.com
 
-Project Link: https://github.com/ponchotitlan/will-they-wont-they-cfp
+Project Link: https://github.com/ponchotitlan/cfp-session-eval-council
 
 ## Acknowledgements
 This template was adapted from https://github.com/othneildrew/Best-README-Template.
