@@ -1,6 +1,6 @@
 # How to Contribute
 
-Thanks for your interest in contributing to `Will They Won't They CFP`! Here are a few
+Thanks for your interest in contributing to `CFP Session Eval Council`! Here are a few
 general guidelines on contributing and reporting bugs that we ask you to review.
 Following these guidelines helps to communicate that you respect the time of the
 contributors managing and developing this open source project. In return, they
@@ -18,13 +18,13 @@ in any real-time space e.g., Slack, Discord, etc.
 
 Before reporting a new issue, please ensure that the issue was not already
 reported or fixed by searching through our [issues
-list](https://github.com/ponchotitlan/will-they-wont-they-cfp/issues).
+list](https://github.com/ponchotitlan/cfp-session-eval-council/issues).
 
 When creating a new issue, please be sure to include a **title and clear
 description**, as much relevant information as possible, and, if possible, a
 test case.
 
-Use [this link to open a Bug Report](https://github.com/ponchotitlan/will-they-wont-they-cfp/issues/new?template=bug_report.md)
+Use [this link to open a Bug Report](https://github.com/ponchotitlan/cfp-session-eval-council/issues/new?template=bug_report.md)
 
 **If you discover a security bug, please do not report it through GitHub.
 Instead, please see security procedures in [SECURITY.md](/SECURITY.md).**
@@ -41,7 +41,7 @@ major version release.
 
 ## Other Ways to Contribute
 
-We welcome anyone that wants to contribute to `Will They Won't They CFP` to triage and
+We welcome anyone that wants to contribute to `CFP Session Eval Council` to triage and
 reply to open issues to help troubleshoot and fix existing bugs. Here is what
 you can do:
 
@@ -49,14 +49,14 @@ you can do:
   _[Reporting Issues](#reporting-issues)_ section, providing feedback to the
   issue's author on what might be missing.
 - Review and update the existing content of our
-  [Wiki](https://github.com/ponchotitlan/will-they-wont-they-cfp/wiki) with up-to-date
+  [Wiki](https://github.com/ponchotitlan/cfp-session-eval-council/wiki) with up-to-date
   instructions and code samples.
 - Review existing pull requests, and testing patches against real existing
-  applications that use `Will They Won't They CFP`.
+  applications that use `CFP Session Eval Council`.
 - Write a test, or add a missing test case to an existing test.
-- Use [this link to Open a Feature Request](https://github.com/ponchotitlan/will-they-wont-they-cfp/issues/new?template=feature_request.md)
-- Use [this link to Open a Pull Request](https://github.com/ponchotitlan/will-they-wont-they-cfp/compare)
+- Use [this link to Open a Feature Request](https://github.com/ponchotitlan/cfp-session-eval-council/issues/new?template=feature_request.md)
+- Use [this link to Open a Pull Request](https://github.com/ponchotitlan/cfp-session-eval-council/compare)
 
-Thanks again for your interest on contributing to `Will They Won't They CFP`!
+Thanks again for your interest on contributing to `CFP Session Eval Council`!
 
 :heart:

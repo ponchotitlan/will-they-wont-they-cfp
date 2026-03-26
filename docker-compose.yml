@@ -1,21 +1,21 @@
 services:
-  will-they-wont-they-cfp-proxy:
+  cfp-session-eval-council-proxy:
     build:
       context: ./proxy
       dockerfile: Dockerfile
-    container_name: will-they-wont-they-cfp-proxy
+    container_name: cfp-session-eval-council-proxy
     environment:
       - NODE_TLS_REJECT_UNAUTHORIZED=0
     restart: unless-stopped
 
-  will-they-wont-they-cfp-app:
+  cfp-session-eval-council-app:
     build:
       context: .
       dockerfile: Dockerfile
-    image: will-they-wont-they-cfp-app:latest
-    container_name: will-they-wont-they-cfp-app
+    image: cfp-session-eval-council-app:latest
+    container_name: cfp-session-eval-council-app
     ports:
       - "8080:80"
     depends_on:
-      - will-they-wont-they-cfp-proxy
+      - cfp-session-eval-council-proxy
     restart: unless-stopped

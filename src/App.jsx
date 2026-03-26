@@ -50,7 +50,7 @@ export default function SessionEvaluator() {
   // Load config from localStorage or use defaults
   const [config, setConfig] = useState(() => {
     try {
-      const saved = JSON.parse(localStorage.getItem("will-they-wont-they-config") || "{}");
+      const saved = JSON.parse(localStorage.getItem("cfp-session-eval-council-config") || "{}");
       return { ...APP_DEFAULT_CONFIG, ...saved };
     } catch { return APP_DEFAULT_CONFIG; }
   });
@@ -58,7 +58,7 @@ export default function SessionEvaluator() {
 
   // Persist config to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem("will-they-wont-they-config", JSON.stringify(config));
+    localStorage.setItem("cfp-session-eval-council-config", JSON.stringify(config));
   }, [config]);
 
   // Export the full evaluation report as a Markdown file
@@ -338,7 +338,7 @@ ${truncate(results.audience)}
       <div className="app-header">
         <div className="header-logo">✏️</div>
         <div>
-          <div className="header-brand-name">WILL THEY WON'T THEY</div>
+          <div className="header-brand-name">CFP SESSION EVALUATOR COUNCIL</div>
           <div className="header-brand-sub">MULTI-AGENT CONFERENCE CFP (CALL FOR PAPERS) SESSION EVALUATOR</div>
         </div>
         <div className="header-right">

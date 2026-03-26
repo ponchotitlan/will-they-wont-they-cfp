@@ -148,7 +148,7 @@ callLLM(config, agent.role, buildAgentMessage(agent.id), maxTokens)
 
 ## ⚙️ Config & Settings
 
-`ConfigPanel.jsx` lets the user pick provider, model, and paste their API key. Settings are written to `localStorage` under the key `will-they-wont-they-config` on every change.
+`ConfigPanel.jsx` lets the user pick provider, model, and paste their API key. Settings are written to `localStorage` under the key `cfp-session-eval-council-config` on every change.
 
 Default config (`src/lib/utils.js` + `src/config/models.js`):
 ```js

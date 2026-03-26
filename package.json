@@ -1,5 +1,5 @@
 {
-  "name": "will-they-wont-they-cfp",
+  "name": "cfp-session-eval-council",
   "version": "0.1.0",
   "description": "Multi-agent conference abstract evaluator powered by Claude",
   "type": "module",
